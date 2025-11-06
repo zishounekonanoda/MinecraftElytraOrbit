@@ -1,0 +1,84 @@
+tick_period: 1
+groups:
+  # ===============================================================
+  # PREDATOR (プレデター軌道) - 滑空中のみ
+  # ===============================================================
+  PREDATOR:
+    effects:
+      - particle: REDSTONE
+        count: 20
+        offset: 0.2
+        speed: 0.05
+        when: GLIDING
+        redstone:
+          color: "#FF0000"
+          size: 1
+      - particle: FLAME
+        count: 5
+        offset: 0.2
+        speed: 0.01
+        when: GLIDING
+      - particle: FIREWORKS_SPARK
+        count: 5
+        offset: 0.2
+        speed: 0.01
+        when: GLIDING
+
+  # ===============================================================
+  # MASTER (マスター軌道) - 滑空中のみ
+  # ===============================================================
+  MASTER:
+    effects:
+      - particle: REDSTONE
+        count: 20
+        offset: 0.2
+        speed: 0.05
+        when: GLIDING
+        redstone:
+          color: "#9900FF"
+          size: 1
+      - particle: WITCH
+        count: 8
+        offset: 0.2
+        speed: 0.02
+        when: GLIDING
+      - particle: FIREWORKS_SPARK
+        count: 3
+        offset: 0.2
+        speed: 0.01
+        when: GLIDING
+
+  # ===============================================================
+  # DIAMOND (ダイヤモンド軌道) - 滑空中のみ
+  # ===============================================================
+  DIAMOND:
+    effects:
+      - particle: REDSTONE
+        count: 20
+        offset: 0.2
+        speed: 0.05
+        when: GLIDING
+        redstone:
+          color: "#60C2FF"
+          size: 1
+      - particle: CRIT_MAGIC
+        count: 10
+        offset: 0.2
+        speed: 0.1
+        when: GLIDING
+      - particle: SNOWFLAKE
+        count: 5
+        offset: 0.2
+        speed: 0.01
+        when: GLIDING
+
+  TEST:
+    effects:
+      - particle: REDSTONE
+        count: 20
+        offset: 0.2
+        speed: 0.05
+        when: GLIDING
+        redstone:
+          color: "#9900FF"
+          size: 1

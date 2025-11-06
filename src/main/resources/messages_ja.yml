@@ -1,0 +1,30 @@
+# ApexOrbitTrails Japanese Language File
+
+# GUI Titles
+gui.title.main: "&1軌道を選択 &8(ページ {page}/{totalPages})"
+gui.title.lang: "&1言語を選択"
+
+# GUI Items
+gui.item.trail.lore: "&7クリックしてこの軌道を有効化"
+gui.item.remove_trail.name: "&c軌道を外す"
+gui.item.remove_trail.lore: "&7クリックして現在の軌道を外します"
+gui.item.nav.next: "&e次のページ >>"
+gui.item.nav.prev: "&e<< 前のページ"
+gui.item.lang.name: "&aLanguage / 言語"
+gui.item.lang.lore: "&7クリックして言語を変更します"
+gui.item.lang.en: "&f&lEnglish (英語)"
+gui.item.lang.ja: "&f&l日本語"
+
+# Command Feedback
+command.reloaded: "&a設定とメッセージをリロードしました。"
+command.no_permission: "&cこのコマンドを実行する権限がありません。"
+command.player_only: "&cこのコマンドはプレイヤーのみが実行できます。"
+command.usage: "&c使い方: /orbit <tag|untag|reload|menu>"
+command.player_not_found: "&cプレイヤーが見つかりません: {player}"
+command.group_not_found: "&c設定にグループが見つかりません: {group}"
+command.tagged: "&a{player} に {group} の軌道を付与しました。他の軌道タグは削除されました。"
+command.untagged: "&a{player} からタグ {group} を削除しました。"
+command.trail_set: "&a軌道を {trail} に設定しました。"
+command.trail_removed: "&a軌道を解除しました。"
+command.unknown_trail: "&cエラー: 不明な軌道が選択されました。"
+command.lang_set: "&a言語を日本語に設定しました。"

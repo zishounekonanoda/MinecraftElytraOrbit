@@ -1,0 +1,16 @@
+name: ApexOrbitTrails
+main: org.neko.elytratrail2.ElytraTrail2
+version: 1.0.0
+api-version: '1.21'
+description: 'Apex-style flight with particle trails for tagged players.'
+commands:
+  orbit:
+    description: Manage orbit tags and reload config.
+    usage: /orbit <tag|untag|reload|menu>
+    permission: apexorbit.admin
+permissions:
+  apexorbit.admin:
+    default: op
+  apexorbit.menu:
+    description: Allows opening the trail selection GUI.
+    default: true
