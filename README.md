@@ -1,29 +1,28 @@
 # ApexOrbitTrails / ElytraTrail2
 
-## English (EN)
-
+## English (EN) — 日本語は下にあります！
 ### Overview
-- Minecraft Paper/Spigot (1.21.x) plugin that recreates Apex Legends rank trails while gliding with Elytra.
-- Grants `allowFlight` and spawns configurable particle effects for players tagged via scoreboard.
-- `/orbit` command + GUIs allow trail selection/removal, language switching, and config reloads.
+- This plugin recreates Apex Legends–style rank orbit particles while you glide with an Elytra on Paper/Spigot 1.21.x servers.
+- Basic usage: run `/orbit` to open the GUI and pick a trail. The default config ships with Diamond, Predator, Master, plus a dummy "TEST" entry for your own presets.
+- The `/orbit` GUI handles enabling/disabling trails and switching between Japanese/English without touching commands.
 
-### Supported Versions & Build
-- Server: Paper / Spigot 1.21 – 1.21.10 (Java 17).
-- `pom.xml` exposes `paper.api.version`; override with `mvn "-Dpaper.api.version=1.21.7-R0.1-SNAPSHOT" clean package`.
-- Because 1.21.x APIs are compatible, one JAR built for any 1.21.x API works across the entire range.
+### Supported Versions
+- Target servers: Paper / Spigot 1.21 through 1.21.10.
+- Newer Minecraft versions will receive builds whenever the maintainer has time to publish them.
 
 ### Key Features
-- `config.yml`’s `groups` define scoreboard tags and their particle stacks.
-- `EmitWhen` (FLYING / GLIDING / FALLING / ALL) decides when effects fire.
-- Trail selection GUI with pagination, removal button, and language button; language GUI persists per-player preference (`player_locales.yml`).
-- `/orbit tag|untag|menu|reload` command suite with proper permissions and tab complete.
+- Scoreboard tags defined under `config.yml: groups` decide which players receive which trail.
+- `EmitWhen` (FLYING / GLIDING / FALLING / ALL) controls when particles spawn, so you can limit effects to Elytra flight only.
+- Dedicated trail-selection and language-selection GUIs with paging for large configs.
+- Each player’s language choice is saved to `player_locales.yml`, acting as a lightweight DB so you don’t have to manage anything manually.
+- `/orbit "tag|untag" <player>` lets admins manage tags via command. It’s not recommended for self-use—stick to the GUI. Adding a second tag automatically removes the older one.
 
 ### Installation
-1. Build or download `apex-orbit-trails-1.0.0.jar`.
-2. Drop it into `plugins/`, restart or `/reload confirm`.
-3. Edit the generated config/messages under `plugins/ApexOrbitTrails/`.
+1. Grab the jar from the Releases page (or build it yourself).
+2. Drop it into `plugins/`, then restart or run `/reload confirm` (newer Minecraft versions may require a full restart because `/reload` is being phased out).
+3. On first boot the plugin creates `config.yml`, `messages_en.yml`, `messages_ja.yml`, and `player_locales.yml` under `plugins/ApexOrbitTrails/`.
 
-### Configuration snippet
+### Configuration (`config.yml`)
 ```yaml
 tick_period: 1
 groups:
@@ -43,82 +42,77 @@ groups:
         speed: 0.01
         when: GLIDING
 ```
-- List multiple entries under `groups.<TAG>.effects`.
-- REDSTONE supports `redstone.color` (hex) and `redstone.size`.
-- If `effects` is missing, legacy single-effect keys are still supported.
+- Multiple effects per group are supported. Each entry controls the particle type (`particle`), spawn count (`count`), offset (`offset`), animation speed (`speed`), and condition (`when`, either GLIDING or ALL). GLIDING restricts emission to Elytra flight, whereas ALL also covers jumps.
+- When `particle: REDSTONE`, you can specify `redstone.color` (hex) and `redstone.size`. See the Bukkit API docs for every particle option: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html
 
 ### Commands & Permissions
 | Command | Description | Permission |
 |---------|-------------|------------|
-| `/orbit` | Open GUI (players only) | `apexorbit.menu` |
-| `/orbit menu` `/orbit gui` | Force-open GUI | `apexorbit.menu` |
-| `/orbit reload` | Reload config and messages | `apexorbit.admin` |
-| `/orbit tag <player> <group>` | Assign trail tag (removes others) | `apexorbit.admin` |
-| `/orbit untag <player> <group>` | Remove specific tag; disables flight if none remain | `apexorbit.admin` |
+| `/orbit` (no args) | Open the GUI (players only) | `apexorbit.menu` |
+| `/orbit reload` | Reload `config.yml` and message files | `apexorbit.admin` |
+| `/orbit tag <player> <group>` | Give a player a trail tag (removes the old one) | `apexorbit.admin` |
+| `/orbit untag <player> <group>` | Remove a specific tag | `apexorbit.admin` |
 
 Permissions:
 - `apexorbit.admin` (default: OP)
-- `apexorbit.menu` (default: true)
+- `apexorbit.menu` (default: everyone)
 
 ### GUI Usage
-- Trail GUI (opened via `/orbit`):
-  - Arrows: paginate.
-  - Barrier: remove trail tag(s).
-  - Player head: open language GUI.
-  - Trail icons: apply group immediately.
+- `/orbit` opens the trail GUI.
+  - Arrows paginate pages.
+  - Barrier deletes every applied trail tag.
+  - Player head opens the language GUI.
+  - Each trail icon applies the configured group instantly.
 - Language GUI:
-  - Red banner = English, white banner = Japanese. Returns to Trail GUI after selection.
+  - Red banner = English, white banner = Japanese. After selecting, the trail GUI reopens.
 
 ### Localization
-- Edit `messages_en.yml` / `messages_ja.yml`.
-- Per-player language stored in `player_locales.yml`.
-- Add new locales by bundling `messages_<lang>.yml` and registering via `LocaleManager#saveDefaultLocale`.
+- Edit `messages_en.yml` / `messages_ja.yml` to change GUI labels or command feedback.
+- Players switch languages via the GUI, and their choice is stored in `player_locales.yml` (UUID → language code).
+- To add another language you’ll need to ship a new build that bundles `messages_<lang>.yml` and call `LocaleManager#saveDefaultLocale("<lang>")`, plus provide GUI buttons.
 
 ### Example scoreboard workflow
 1. `scoreboard players tag Steve add PREDATOR`
-2. Player rejoins → Glide trail + flight granted.
-3. Removing all tags resets trails and disables flight outside creative/spectator.
+2. When the player rejoins, Elytra flight permission toggles on automatically.
+3. Removing the tag stops the trail and revokes flight in Survival/Adventure modes.
 
 ### Troubleshooting
-- **No particles**: ensure `particle` key exists and `EmitWhen` condition is met.
-- **Flight doesn’t enable**: check other plugins changing `allowFlight` or player gamemode.
-- **Garbled JP text**: save message files in UTF-8.
-- **Build fails**: targeted Paper API version might not exist yet; wait for publication or force update with `-U`.
+- **Particles never show**: confirm the `particle` option exists and the `when` condition applies to the player’s current state.
+- More items will be added as needed.
 
 ### FAQ
-- **One JAR for all 1.21.x?** Yes—compile against any 1.21.x API and reuse.
-- **Add new ranks to GUI?** Extend `config.yml` and optionally update `GuiManager#getMaterialForGroup`.
-- **Add new languages?** Add `messages_<lang>.yml`, register in `LocaleManager`, add buttons in GUI.
+- **Which versions are supported?** → 1.21 through 1.21.10.
+- **How do I add another rank to the GUI?** → Follow the configuration section above and extend `config.yml > groups` with new particle definitions. Refer to the Bukkit API list for valid particle names.
+- **How do I add non-default languages (advanced)?** → Bundle `messages_<lang>.yml`, register it in `LocaleManager`, then add language buttons in the GUI.
 
 ### Development Tips
-- Java 17 + Maven; `ParticleConfig` interprets YAML so complex effects live in config only.
-- GUI slots: 45 (prev), 48 (language), 49 (remove), 53 (next).
-- Always update both language files when adding message keys.
+- Java 17 + Maven; `ParticleConfig` interprets YAML so you can model complex effects entirely in config.
+- GUI slots: 45 (previous), 48 (language), 49 (remove), 53 (next).
+- Whenever you add a message key, update every language file to keep parity.
 
 ---
 
 ## 日本語 (JA)
 
 ### 概要
-- Apex Legends のランク軌道風パーティクルを Elytra 滑空中に再現する Paper/Spigot (1.21.x) 向けプラグインです。
-- スコアボードタグを持つプレイヤーに対し、設定されたパーティクルを周期的に生成しつつ飛行許可を自動付与します。
-- `/orbit` コマンドと GUI で軌道の付け外し・言語切替・設定リロードを操作できます。
+- このプラグインは、Apex Legends のランク軌道風パーティクルを Elytra 滑空中に再現する Paper/Spigot (1.21.x) 向けプラグインです。
+- 簡単な使用方法は、コマンド`/orbit`でGUIを開き、軌道を選択します。初期設定ではダイヤモンド、プレデター、マスターの三つと、カスタマイズ向けにダミーのテスト軌道を用意してあります。
+- `/orbit` コマンドの GUI で軌道の付け外し・言語切替(日本語と英語)・を操作できます。
 
-### 対応バージョン / ビルド
+### 対応バージョン 
 - 対応サーバー: Paper / Spigot 1.21 ～ 1.21.10。
-- JDK 17 でコンパイル。`pom.xml` の `paper.api.version` を差し替えればターゲット API を変更可能です。
-- 1.21.x 系は API が互換のため、任意の 1.21.x API でビルドした単一 JAR を全 1.21.x サーバーで使用できます。
+- 製作者の気が向けば永続的に次バージョンもリリースします。
 
 ### 主な機能
-- スコアボードタグ判定 (`config.yml: groups`) により対象プレイヤーを決定。
-- `EmitWhen` (FLYING / GLIDING / FALLING / ALL) 条件に応じて粒子を生成。
-- Trail 選択 GUI と言語選択 GUI を提供。ページング／削除／言語ボタンを配置。
-- プレイヤーごとの言語設定を `player_locales.yml` に永続化。
-- `/orbit` コマンドでタグ付与・削除・GUI 表示・設定リロードを実装。
+- タグ判定 (`config.yml: groups`) により対象プレイヤーを決定。
+- `EmitWhen` (FLYING / GLIDING / FALLING / ALL) 条件に応じてパーティクルを生成。
+- 軌道 選択 GUI と言語選択 GUI があります。ページング機能も付いており、スロットの最大数を超過した場合に発現します。
+- プレイヤーごとの言語設定を `player_locales.yml` に永続化。DB扱いなのでどうでもよいです。
+- `/orbit "tag/untag" [名前]`を使用すると手動でプレイヤーに軌道を付与します。※自分に対しては非推奨。GUIを推奨します。また、同時に2個つけると古いものから外されます。
 
 ### インストール手順
-1. リリース JAR もしくは `target/apex-orbit-trails-1.0.0.jar` を取得。
-2. サーバー `plugins/` に配置し、再起動または `/reload confirm`。
+1. リリース からファイルを取得してください。
+2. サーバー `plugins/` に配置し、再起動または `/reload confirm`(最新バージョンではreloadが廃止されているようなので、再起動が必要な場合があります)
 3. 初回起動で `config.yml`, `messages_en.yml`, `messages_ja.yml`, `player_locales.yml` が `plugins/ApexOrbitTrails/` に生成されます。
 
 ### 設定 (`config.yml`)
@@ -141,36 +135,34 @@ groups:
         speed: 0.01
         when: GLIDING
 ```
-- `groups.<TAG>.effects` に複数エフェクトを列挙。`particle`, `count`, `offset`, `speed`, `when` などを設定します。
-- `particle: REDSTONE` の場合は `redstone.color` (HEX) と `redstone.size` を指定可能。
-- `effects` を省略した場合はレガシー形式として `groups.<TAG>` 直下のキーを 1 つのエフェクトとして扱います。
+- 複数エフェクト対応。また、パーティクルごとに生成量を細かく変更できます。`particle`でパーティクルの種類, `count`で一度に生成される量, `offset`で高さの調整, `speed`でパーティクルのアニメーションスピード, `when`では[GLIDING]か[ALL]を設定できます。[ALL]ではジャンプしている間常にパーティクルが生成されますが、[GLIDING]にすることでエリトラの飛行中のみに制限できます。
+- また、`particle: REDSTONE` の場合は `redstone.color` (HEX) と `redstone.size` を指定可能。パーティクルの詳しい説明はbukkit apiのページを参照してください：https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html
 
 ### コマンド / 権限
 | コマンド | 説明 | 権限 |
 |----------|------|------|
 | `/orbit` (引数なし) | GUI 表示（プレイヤーのみ） | `apexorbit.menu` |
-| `/orbit menu` / `/orbit gui` | GUI を即時表示 | `apexorbit.menu` |
 | `/orbit reload` | `config.yml` とメッセージをリロード | `apexorbit.admin` |
-| `/orbit tag <player> <group>` | プレイヤーにタグ付与（他タグは自動削除） | `apexorbit.admin` |
-| `/orbit untag <player> <group>` | 指定タグを削除。残タグが無い場合は飛行許可を無効化 | `apexorbit.admin` |
+| `/orbit tag <player> <group>` | プレイヤーにタグ付与（古いものから自動削除） | `apexorbit.admin` |
+| `/orbit untag <player> <group>` | 指定タグを削除。 | `apexorbit.admin` |
 
 権限:
 - `apexorbit.admin` (default: OP)
-- `apexorbit.menu` (default: true)
+- `apexorbit.menu` (default: 全員)
 
 ### GUI の使い方
 - `/orbit` で Trail GUI を開く。
   - 矢印: ページ送り。
   - バリア: 現在の軌道タグを全削除。
   - プレイヤーヘッド: 言語 GUI を開く。
-  - 各アイコン: 対応グループの Trail を即時適用。
+  - 各アイコン: configで設定した軌道を即時適用。
 - 言語 GUI:
   - 赤バナー: 英語。白バナー: 日本語。選択後は Trail GUI を再表示。
 
 ### ローカライズ
 - `messages_en.yml` / `messages_ja.yml` で GUI やコマンド出力を編集可能。
 - プレイヤー言語は GUI で切替、`player_locales.yml` に UUID→言語コードとして保存。
-- 新言語を追加する場合は `messages_<lang>.yml` を同梱し、`LocaleManager` に `saveDefaultLocale("<lang>")` を追記します。
+- 新言語を追加する場合は、ソースコードから別途ビルドしてください。 `messages_<lang>.yml` を同梱し、`LocaleManager` に `saveDefaultLocale("<lang>")` を追記します。
 
 ### スコアボードタグ運用例
 1. `scoreboard players tag <player> add PREDATOR` などでタグ付与。
@@ -178,17 +170,11 @@ groups:
 3. タグ削除時に Trail も停止し、サバイバル/アドベンチャーでは飛行許可が無効化されます。
 
 ### トラブルシューティング
-- **パーティクルが出ない**: `groups.<TAG>.effects` に `particle` があるか、`when` 条件を満たしているか確認。
-- **タグを付けても飛べない**: 他プラグインが `allowFlight` を上書きしていないか、ゲームモードがサバイバル/アドベンチャーか確認。
-- **文字化け**: `messages_ja.yml` を UTF-8 で保存してください。
-- **コンパイル不可**: 指定した Paper API 版が未公開の場合は依存解決に失敗します。公開後に再ビルドしてください。
+- **パーティクルが出ない**: `config` に `particle` があるか、`when` 条件を満たしているか確認。
+- 随時追加予定
 
 ### よくある質問
-- **1 つの JAR で 1.21 ～ 1.21.10 に対応できますか？** → はい。1.21 系の Paper API は後方互換です。
-- **GUI に新しいランクを追加するには？** → `config.yml` の `groups` に追加し、必要なら `GuiManager#getMaterialForGroup` などを拡張。
-- **デフォルト以外の言語を追加したい。** → `messages_<lang>.yml` 追加 → `LocaleManager` に登録 → GUI ボタン追加。
+- **対応バージョンは何ですか？** → 1.21 ～ 1.21.10 に対応しています。
+- **GUI に新しいランクを追加するには？** → 上記の開設を参考に、`config.yml` の `groups` にパーティクルを追加してください。パーティクルの名前はbukkit apiのサイトで確認できます：https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html
 
-### 開発 Tips
-- Java 17 + Maven。`ParticleConfig` が YAML を解釈するので、複雑な効果も設定ファイルだけで完結します。
-- GUI のスロット配置は `GuiManager` の固定値（48:言語、49:バリア、45/53:矢印）を参照。
-- メッセージは `LocaleManager#getString` を経由して取得するため、新規キーを追加するときは全言語ファイルの同期を忘れないでください。
+- **デフォルト以外の言語を追加したい。(高度)** → `messages_<lang>.yml` 追加 → `LocaleManager` に登録 → GUI ボタン追加。
