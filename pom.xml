@@ -8,6 +8,7 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <paper.api.version>1.21-R0.1-SNAPSHOT</paper.api.version>
     </properties>
 
 
@@ -23,10 +24,9 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21-R0.1-SNAPSHOT</version>
+            <version>${paper.api.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
-
 
