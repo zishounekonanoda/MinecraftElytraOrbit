@@ -7,10 +7,8 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -20,6 +18,7 @@ public class LocaleManager {
     private final ElytraTrail2 plugin;
     private final Map<String, FileConfiguration> loadedLocales = new HashMap<>();
     private final Map<UUID, String> playerLocales = new HashMap<>();
+    private static final String DEFAULT_LANG = "en";
     private File playerLocalesFile;
     private FileConfiguration playerLocalesConfig;
 
@@ -44,6 +43,7 @@ public class LocaleManager {
         loadedLocales.clear();
         saveDefaultLocale("en");
         saveDefaultLocale("ja");
+        playerLocales.clear();
         loadPlayerLocales();
     }
 
@@ -62,6 +62,9 @@ public class LocaleManager {
             for (Map.Entry<UUID, String> entry : playerLocales.entrySet()) {
                 playerLocalesConfig.set(entry.getKey().toString(), entry.getValue());
             }
+            if (!playerLocalesFile.exists()) {
+                playerLocalesFile.getParentFile().mkdirs();
+            }
             playerLocalesConfig.save(playerLocalesFile);
         } catch (IOException e) {
             plugin.getLogger().log(Level.SEVERE, "Could not save player locales!", e);
@@ -69,24 +72,70 @@ public class LocaleManager {
     }
 
     public void setPlayerLocale(Player player, String lang) {
-        playerLocales.put(player.getUniqueId(), lang);
+        playerLocales.put(player.getUniqueId(), normalizeLanguage(lang));
     }
 
     public String getPlayerLocale(Player player) {
-        return playerLocales.getOrDefault(player.getUniqueId(), "en"); // Default to English
+        if (player == null) {
+            return DEFAULT_LANG;
+        }
+        return playerLocales.computeIfAbsent(player.getUniqueId(), uuid -> detectPlayerLocale(player));
+    }
+
+    private String detectPlayerLocale(Player player) {
+        String detected = invokeLocaleGetter(player, "locale");
+        if (detected == null) {
+            detected = invokeLocaleGetter(player, "getLocale");
+        }
+        return normalizeLanguage(detected);
+    }
+
+    private String invokeLocaleGetter(Player player, String methodName) {
+        try {
+            Object result = player.getClass().getMethod(methodName).invoke(player);
+            if (result instanceof Locale locale) {
+                return locale.getLanguage();
+            }
+            if (result != null) {
+                return result.toString();
+            }
+        } catch (ReflectiveOperationException | SecurityException ignored) {
+            // Method not available on this server implementation
+        }
+        return null;
+    }
+
+    private String normalizeLanguage(String lang) {
+        if (lang == null || lang.isBlank()) {
+            return DEFAULT_LANG;
+        }
+        String normalized = lang.trim().toLowerCase(Locale.ROOT);
+        int separator = normalized.indexOf('_');
+        if (separator > -1) {
+            normalized = normalized.substring(0, separator);
+        }
+        if (!loadedLocales.containsKey(normalized)) {
+            return DEFAULT_LANG;
+        }
+        return normalized;
     }
 
     public String getString(String key, Player player) {
-        String lang = getPlayerLocale(player);
-        FileConfiguration langConfig = loadedLocales.getOrDefault(lang, loadedLocales.get("en"));
-        String message = langConfig.getString(key, loadedLocales.get("en".toString()).getString(key, "&cMissing translation key: " + key));
+        String lang = (player != null) ? getPlayerLocale(player) : DEFAULT_LANG;
+        FileConfiguration langConfig = loadedLocales.getOrDefault(lang, loadedLocales.get(DEFAULT_LANG));
+        String message = langConfig.getString(key);
+        if (message == null) {
+            message = loadedLocales.get(DEFAULT_LANG).getString(key, "&cMissing translation key: " + key);
+        }
         return ChatColor.translateAlternateColorCodes('&', message);
     }
 
     public String getString(String key, Player player, Map<String, String> placeholders) {
         String message = getString(key, player);
-        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-            message = message.replace("{" + entry.getKey() + "}", entry.getValue());
+        if (placeholders != null) {
+            for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+                message = message.replace("{" + entry.getKey() + "}", entry.getValue());
+            }
         }
         return message;
     }

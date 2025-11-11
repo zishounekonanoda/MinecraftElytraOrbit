@@ -1,18 +1,14 @@
 package org.neko.elytratrail2;
 
-import org.bukkit.GameMode;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
-public final class ElytraTrail2 extends JavaPlugin implements Listener {
+public final class ElytraTrail2 extends JavaPlugin {
     private TrailTask trailTask;
     private LocaleManager localeManager;
 
@@ -24,7 +20,6 @@ public final class ElytraTrail2 extends JavaPlugin implements Listener {
         saveDefaultConfig();
 
         // Register events
-        getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new GuiListener(this), this);
 
         // Register command
@@ -54,16 +49,6 @@ public final class ElytraTrail2 extends JavaPlugin implements Listener {
 
     public LocaleManager getLocaleManager() {
         return localeManager;
-    }
-
-    @EventHandler
-    public void onJoin(PlayerJoinEvent e) {
-        Player p = e.getPlayer();
-        getMatchingGroupTag(p).ifPresent(group -> {
-            if (p.getGameMode() != GameMode.CREATIVE && p.getGameMode() != GameMode.SPECTATOR) {
-                p.setAllowFlight(true);
-            }
-        });
     }
 
     public Set<String> getConfiguredGroups() {

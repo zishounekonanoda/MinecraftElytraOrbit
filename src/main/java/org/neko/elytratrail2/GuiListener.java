@@ -1,8 +1,8 @@
 package org.neko.elytratrail2;
 
 import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,6 +11,8 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -20,10 +22,12 @@ public class GuiListener implements Listener {
 
     private final ElytraTrail2 plugin;
     private final LocaleManager lm;
+    private final NamespacedKey trailKey;
 
     public GuiListener(ElytraTrail2 plugin) {
         this.plugin = plugin;
         this.lm = plugin.getLocaleManager();
+        this.trailKey = new NamespacedKey(plugin, "trail_id");
     }
 
     @EventHandler
@@ -72,20 +76,33 @@ public class GuiListener implements Listener {
         }
 
         // Trail Selection
-        String displayName = clickedItem.getItemMeta().getDisplayName();
-        String groupName = ChatColor.stripColor(displayName).replace(" Trail", "").replace("&l", "");
+        ItemMeta meta = clickedItem.getItemMeta();
+        String displayName = meta.getDisplayName();
+
+        String groupName = meta.getPersistentDataContainer().get(trailKey, PersistentDataType.STRING);
+        if (groupName == null || groupName.isBlank()) {
+            groupName = deriveGroupNameFromDisplay(displayName);
+        }
 
         if (plugin.getConfiguredGroups().contains(groupName)) {
             removeAllTrailTags(player);
             player.addScoreboardTag(groupName);
-            if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR) {
-                player.setAllowFlight(true);
-            }
             player.sendMessage(lm.getString("command.trail_set", player, Map.of("trail", displayName)));
         } else {
             player.sendMessage(lm.getString("command.unknown_trail", player));
         }
         player.closeInventory();
+    }
+
+    private String deriveGroupNameFromDisplay(String displayName) {
+        String plain = ChatColor.stripColor(displayName).trim();
+        if (plain.endsWith(" Trail")) {
+            plain = plain.substring(0, plain.length() - " Trail".length()).trim();
+        }
+        if (plain.endsWith(" 軌道")) {
+            plain = plain.substring(0, plain.length() - " 軌道".length()).trim();
+        }
+        return plain;
     }
 
     private void handleLangGuiClick(InventoryClickEvent event, Player player) {
@@ -108,11 +125,6 @@ public class GuiListener implements Listener {
         for (String existingTag : new ArrayList<>(player.getScoreboardTags())) {
             if (configuredGroups.contains(existingTag)) {
                 player.removeScoreboardTag(existingTag);
-            }
-        }
-        if (plugin.getMatchingGroupTag(player).isEmpty()) {
-            if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR) {
-                player.setAllowFlight(false);
             }
         }
     }

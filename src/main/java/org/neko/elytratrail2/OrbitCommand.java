@@ -87,9 +87,6 @@ public class OrbitCommand implements CommandExecutor, TabCompleter {
                 }
                 target.addScoreboardTag(group);
 
-                if (target.getGameMode() != org.bukkit.GameMode.CREATIVE && target.getGameMode() != org.bukkit.GameMode.SPECTATOR) {
-                    target.setAllowFlight(true);
-                }
                 sender.sendMessage(lm.getString("command.tagged", player, Map.of("player", target.getName(), "group", group)));
                 break;
 
@@ -109,11 +106,6 @@ public class OrbitCommand implements CommandExecutor, TabCompleter {
                 }
                 String groupToRemove = args[2];
                 targetToRemove.removeScoreboardTag(groupToRemove);
-                if (plugin.getMatchingGroupTag(targetToRemove).isEmpty()) {
-                    if (targetToRemove.getGameMode() != org.bukkit.GameMode.CREATIVE && targetToRemove.getGameMode() != org.bukkit.GameMode.SPECTATOR) {
-                        targetToRemove.setAllowFlight(false);
-                    }
-                }
                 sender.sendMessage(lm.getString("command.untagged", player, Map.of("player", targetToRemove.getName(), "group", groupToRemove)));
                 break;
 

@@ -5,6 +5,7 @@ gui.title.main: "&1Select a Trail &8(Page {page}/{totalPages})"
 gui.title.lang: "&1Select a Language"
 
 # GUI Items
+gui.item.trail.name: "{color}{trail} Trail"
 gui.item.trail.lore: "&7Click to activate this trail."
 gui.item.remove_trail.name: "&cRemove Trail"
 gui.item.remove_trail.lore: "&7Click to remove your current trail."

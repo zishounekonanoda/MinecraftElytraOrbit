@@ -3,12 +3,15 @@ package org.neko.elytratrail2;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
+import java.util.Locale;
 
 public class GuiManager {
 
@@ -32,7 +35,7 @@ public class GuiManager {
 
         for (int i = startIndex; i < endIndex; i++) {
             String groupName = configuredGroups.get(i);
-            gui.addItem(createDisplayItem(groupName, player, lm));
+            gui.addItem(createDisplayItem(groupName, player, lm, plugin));
         }
 
         if (page > 0) {
@@ -73,26 +76,68 @@ public class GuiManager {
         return item;
     }
 
-    private static ItemStack createDisplayItem(String groupName, Player player, LocaleManager lm) {
-        Material material = getMaterialForGroup(groupName);
+    private static ItemStack createDisplayItem(String groupName, Player player, LocaleManager lm, ElytraTrail2 plugin) {
+        Material material = resolveMaterialForGroup(groupName, plugin);
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {
-            meta.setDisplayName(getChatColorForGroup(groupName) + "" + ChatColor.BOLD + groupName + " Trail");
+            ChatColor color = getChatColorForGroup(groupName);
+            Map<String, String> placeholders = Map.of(
+                    "color", color.toString() + ChatColor.BOLD,
+                    "trail", groupName
+            );
+            meta.setDisplayName(lm.getString("gui.item.trail.name", player, placeholders));
             meta.setLore(Collections.singletonList(lm.getString("gui.item.trail.lore", player)));
+            NamespacedKey key = new NamespacedKey(plugin, "trail_id");
+            meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, groupName);
             item.setItemMeta(meta);
         }
         return item;
     }
 
-    private static Material getMaterialForGroup(String groupName) {
-        return switch (groupName.toUpperCase()) {
-            case "PREDATOR" -> Material.NETHERITE_INGOT;
-            case "MASTER" -> Material.AMETHYST_SHARD;
-            case "DIAMOND" -> Material.DIAMOND;
-            default -> Material.GLOWSTONE_DUST;
-        };
+    private static Material resolveMaterialForGroup(String groupName, ElytraTrail2 plugin) {
+        String basePath = "groups." + groupName + ".";
+        // Preferred new syntax: MATERIAL: DIAMOND
+        String iconValue = plugin.getConfig().getString(basePath + "MATERIAL");
+        Material parsed = parseMaterial(iconValue);
+
+        if (parsed == null) {
+            // Backward compatibility with icon: MATERIAL:DIAMOND
+            String legacyIconValue = plugin.getConfig().getString(basePath + "icon");
+            parsed = parseMaterial(legacyIconValue);
+            if (parsed == null && legacyIconValue != null && !legacyIconValue.isBlank()) {
+                plugin.getLogger().warning("Invalid icon '" + legacyIconValue + "' for group '" + groupName + "'. Falling back to GLOWSTONE_DUST.");
+            }
+            if (parsed != null) {
+                return parsed;
+            }
+        } else {
+            return parsed;
+        }
+
+        if (iconValue != null && !iconValue.isBlank()) {
+            plugin.getLogger().warning("Invalid MATERIAL entry '" + iconValue + "' for group '" + groupName + "'. Falling back to GLOWSTONE_DUST.");
+        }
+        return Material.GLOWSTONE_DUST;
+    }
+
+    private static Material parseMaterial(String iconValue) {
+        if (iconValue == null || iconValue.isBlank()) {
+            return null;
+        }
+        String trimmed = iconValue.trim();
+        if (trimmed.toUpperCase(Locale.ROOT).startsWith("MATERIAL:")) {
+            trimmed = trimmed.substring("MATERIAL:".length()).trim();
+        }
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        try {
+            return Material.valueOf(trimmed.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 
     private static ChatColor getChatColorForGroup(String groupName) {

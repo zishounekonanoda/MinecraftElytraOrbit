@@ -3,7 +3,6 @@ package org.neko.elytratrail2;
 import org.bukkit.Color;
 import org.bukkit.Particle;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -28,10 +27,6 @@ public class TrailTask extends BukkitRunnable {
             String group = groupOpt.get();
             ConfigurationSection groupSec = plugin.getConfig().getConfigurationSection("groups." + group);
             if (groupSec == null) continue;
-
-            if (p.getGameMode() != org.bukkit.GameMode.CREATIVE && p.getGameMode() != org.bukkit.GameMode.SPECTATOR && !p.getAllowFlight()) {
-                p.setAllowFlight(true);
-            }
 
             List<Map<?, ?>> effectsList = groupSec.getMapList("effects");
 

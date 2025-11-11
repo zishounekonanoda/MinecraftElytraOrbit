@@ -4,6 +4,7 @@ groups:
   # PREDATOR (プレデター軌道) - 滑空中のみ
   # ===============================================================
   PREDATOR:
+    MATERIAL: NETHERITE_INGOT
     effects:
       - particle: REDSTONE
         count: 20
@@ -28,6 +29,7 @@ groups:
   # MASTER (マスター軌道) - 滑空中のみ
   # ===============================================================
   MASTER:
+    MATERIAL: AMETHYST_SHARD
     effects:
       - particle: REDSTONE
         count: 20
@@ -52,6 +54,7 @@ groups:
   # DIAMOND (ダイヤモンド軌道) - 滑空中のみ
   # ===============================================================
   DIAMOND:
+    MATERIAL: DIAMOND
     effects:
       - particle: REDSTONE
         count: 20
@@ -73,6 +76,7 @@ groups:
         when: GLIDING
 
   TEST:
+    MATERIAL: GLOWSTONE_DUST
     effects:
       - particle: REDSTONE
         count: 20
