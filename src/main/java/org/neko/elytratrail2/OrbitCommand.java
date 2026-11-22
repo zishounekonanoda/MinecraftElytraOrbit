@@ -54,8 +54,7 @@ public class OrbitCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage(lm.getString("command.no_permission", player));
                     return true;
                 }
-                plugin.reloadConfig();
-                lm.reloadLocales();
+                plugin.reloadAll();
                 sender.sendMessage(lm.getString("command.reloaded", player));
                 break;
 

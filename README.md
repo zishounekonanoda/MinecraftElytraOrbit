@@ -13,6 +13,10 @@ You can also adjust the number of particles, animation speed, and whether the or
 Note: The particle names differ from vanilla Minecraft. Please refer to this page:
 https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html
 
+Older particle names from before 1.20.5 (e.g. `FIREWORKS_SPARK`, `CRIT_MAGIC`) are converted to the current names automatically. `REDSTONE` is accepted as `DUST`.
+
+The GUI name color of each orbit can be set with `COLOR` (e.g. `COLOR: RED` or `COLOR: "&c"`).
+
 The item names also differ from vanilla naming conventions. Please refer to this page:
 https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html
 
@@ -26,6 +30,10 @@ For detailed instructions, please see the [Wiki](https://github.com/zishounekona
 このプラグインは、ゲーム「エーペックスレジェンズ」にて実装されているユニークなシステム、「ランク軌道」をそのままマイクラに持ってきたものです。カスタム性の高いconfigファイルを使用して独自の軌道が作れます。マイクラ内に存在するパーティクルをすべて使用でき、一部はカラーも指定できます。(16進数-HexCode)また、パーティクルの出る量やアニメーションスピード、滑空時に起動するか空中にいる間は常に起動するかも選べます。最後に、アイコンのアイテム名を設定すれば完了です。追加、改造がおわれば、/orbit reloadでconfigを再読み込みできます。
 
 パーティクルの名前はバニラの記述とは異なります。このページを参照してください：https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html
+
+1.20.5 より前の古いパーティクル名（`FIREWORKS_SPARK`、`CRIT_MAGIC` など）は、自動で現在の名前に変換されます。`REDSTONE` は `DUST` として扱われます。
+
+GUI に表示される軌道名の色は `COLOR` で指定できます（例: `COLOR: RED` または `COLOR: "&c"`）。
 
 アイテムの名前はバニラの記述と異なります。このページを参照してください。：https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html
 

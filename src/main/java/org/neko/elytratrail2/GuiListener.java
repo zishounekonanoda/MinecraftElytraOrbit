@@ -51,6 +51,14 @@ public class GuiListener implements Listener {
 
         int currentPage = GuiManager.playerPages.getOrDefault(player.getUniqueId(), 0);
 
+        // Trail icons are identified by their tag first, so a group whose icon is
+        // ARROW / PLAYER_HEAD / BARRIER is not mistaken for a control button.
+        boolean isTrailIcon = clickedItem.getItemMeta().getPersistentDataContainer().has(trailKey, PersistentDataType.STRING);
+        if (isTrailIcon) {
+            selectTrail(clickedItem, player);
+            return;
+        }
+
         // Navigation
         if (clickedItem.getType() == Material.ARROW) {
             if (clickedItem.getItemMeta().getDisplayName().contains(ChatColor.stripColor(lm.getString("gui.item.nav.next", player)))) {
@@ -75,7 +83,10 @@ public class GuiListener implements Listener {
             return;
         }
 
-        // Trail Selection
+        selectTrail(clickedItem, player);
+    }
+
+    private void selectTrail(ItemStack clickedItem, Player player) {
         ItemMeta meta = clickedItem.getItemMeta();
         String displayName = meta.getDisplayName();
 
@@ -108,12 +119,13 @@ public class GuiListener implements Listener {
     private void handleLangGuiClick(InventoryClickEvent event, Player player) {
         event.setCancelled(true);
         ItemStack clickedItem = event.getCurrentItem();
-        if (clickedItem == null) return;
+        if (clickedItem == null || !clickedItem.hasItemMeta()) return;
 
-        if (clickedItem.getItemMeta().getDisplayName().equals(lm.getString("gui.item.lang.en", player))) {
+        String name = clickedItem.getItemMeta().getDisplayName();
+        if (name.equals(lm.getString("gui.item.lang.en", player))) {
             lm.setPlayerLocale(player, "en");
             player.sendMessage(lm.getString("command.lang_set", player));
-        } else if (clickedItem.getItemMeta().getDisplayName().equals(lm.getString("gui.item.lang.ja", player))) {
+        } else if (name.equals(lm.getString("gui.item.lang.ja", player))) {
             lm.setPlayerLocale(player, "ja");
             player.sendMessage(lm.getString("command.lang_set", player));
         }

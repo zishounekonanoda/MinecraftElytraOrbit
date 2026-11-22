@@ -1,9 +1,16 @@
 tick_period: 1
+# Each group:
+#   COLOR:    name color in the GUI. A ChatColor name (RED, AQUA...) or a code (&c). Optional.
+#   MATERIAL: GUI icon (Bukkit Material name).
+#   effects:  list of particles. Use current Bukkit names (FIREWORK, ENCHANTED_HIT...);
+#             old pre-1.20.5 names (FIREWORKS_SPARK, CRIT_MAGIC...) are converted automatically.
+#             REDSTONE (= DUST) takes a "redstone" block with color (hex) and size.
 groups:
   # ===============================================================
   # PREDATOR (プレデター軌道) - 滑空中のみ
   # ===============================================================
   PREDATOR:
+    COLOR: RED
     MATERIAL: NETHERITE_INGOT
     effects:
       - particle: REDSTONE
@@ -19,7 +26,7 @@ groups:
         offset: 0.2
         speed: 0.01
         when: GLIDING
-      - particle: FIREWORKS_SPARK
+      - particle: FIREWORK
         count: 5
         offset: 0.2
         speed: 0.01
@@ -29,6 +36,7 @@ groups:
   # MASTER (マスター軌道) - 滑空中のみ
   # ===============================================================
   MASTER:
+    COLOR: LIGHT_PURPLE
     MATERIAL: AMETHYST_SHARD
     effects:
       - particle: REDSTONE
@@ -44,7 +52,7 @@ groups:
         offset: 0.2
         speed: 0.02
         when: GLIDING
-      - particle: FIREWORKS_SPARK
+      - particle: FIREWORK
         count: 3
         offset: 0.2
         speed: 0.01
@@ -54,6 +62,7 @@ groups:
   # DIAMOND (ダイヤモンド軌道) - 滑空中のみ
   # ===============================================================
   DIAMOND:
+    COLOR: AQUA
     MATERIAL: DIAMOND
     effects:
       - particle: REDSTONE
@@ -64,7 +73,7 @@ groups:
         redstone:
           color: "#60C2FF"
           size: 1
-      - particle: CRIT_MAGIC
+      - particle: ENCHANTED_HIT
         count: 10
         offset: 0.2
         speed: 0.1
@@ -76,6 +85,7 @@ groups:
         when: GLIDING
 
   TEST:
+    COLOR: YELLOW
     MATERIAL: GLOWSTONE_DUST
     effects:
       - particle: REDSTONE

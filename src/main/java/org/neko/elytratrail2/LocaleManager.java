@@ -73,6 +73,8 @@ public class LocaleManager {
 
     public void setPlayerLocale(Player player, String lang) {
         playerLocales.put(player.getUniqueId(), normalizeLanguage(lang));
+        // Persist immediately so a crash or /orbit reload doesn't lose the choice
+        savePlayerLocales();
     }
 
     public String getPlayerLocale(Player player) {

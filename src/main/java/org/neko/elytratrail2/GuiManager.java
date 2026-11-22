@@ -11,7 +11,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
-import java.util.Locale;
 
 public class GuiManager {
 
@@ -20,7 +19,7 @@ public class GuiManager {
 
     public static void openTrailGui(Player player, ElytraTrail2 plugin, int page) {
         LocaleManager lm = plugin.getLocaleManager();
-        List<String> configuredGroups = new ArrayList<>(plugin.getConfiguredGroups());
+        List<TrailGroup> configuredGroups = new ArrayList<>(plugin.getGroups().values());
         int totalPages = (int) Math.ceil((double) configuredGroups.size() / ITEMS_PER_PAGE);
         if (totalPages == 0) totalPages = 1;
 
@@ -34,8 +33,7 @@ public class GuiManager {
         int endIndex = Math.min(startIndex + ITEMS_PER_PAGE, configuredGroups.size());
 
         for (int i = startIndex; i < endIndex; i++) {
-            String groupName = configuredGroups.get(i);
-            gui.addItem(createDisplayItem(groupName, player, lm, plugin));
+            gui.addItem(createDisplayItem(configuredGroups.get(i), player, lm, plugin));
         }
 
         if (page > 0) {
@@ -76,76 +74,21 @@ public class GuiManager {
         return item;
     }
 
-    private static ItemStack createDisplayItem(String groupName, Player player, LocaleManager lm, ElytraTrail2 plugin) {
-        Material material = resolveMaterialForGroup(groupName, plugin);
-        ItemStack item = new ItemStack(material);
+    private static ItemStack createDisplayItem(TrailGroup group, Player player, LocaleManager lm, ElytraTrail2 plugin) {
+        ItemStack item = new ItemStack(group.icon());
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {
-            ChatColor color = getChatColorForGroup(groupName);
             Map<String, String> placeholders = Map.of(
-                    "color", color.toString() + ChatColor.BOLD,
-                    "trail", groupName
+                    "color", group.color().toString() + ChatColor.BOLD,
+                    "trail", group.name()
             );
             meta.setDisplayName(lm.getString("gui.item.trail.name", player, placeholders));
             meta.setLore(Collections.singletonList(lm.getString("gui.item.trail.lore", player)));
             NamespacedKey key = new NamespacedKey(plugin, "trail_id");
-            meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, groupName);
+            meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, group.name());
             item.setItemMeta(meta);
         }
         return item;
-    }
-
-    private static Material resolveMaterialForGroup(String groupName, ElytraTrail2 plugin) {
-        String basePath = "groups." + groupName + ".";
-        // Preferred new syntax: MATERIAL: DIAMOND
-        String iconValue = plugin.getConfig().getString(basePath + "MATERIAL");
-        Material parsed = parseMaterial(iconValue);
-
-        if (parsed == null) {
-            // Backward compatibility with icon: MATERIAL:DIAMOND
-            String legacyIconValue = plugin.getConfig().getString(basePath + "icon");
-            parsed = parseMaterial(legacyIconValue);
-            if (parsed == null && legacyIconValue != null && !legacyIconValue.isBlank()) {
-                plugin.getLogger().warning("Invalid icon '" + legacyIconValue + "' for group '" + groupName + "'. Falling back to GLOWSTONE_DUST.");
-            }
-            if (parsed != null) {
-                return parsed;
-            }
-        } else {
-            return parsed;
-        }
-
-        if (iconValue != null && !iconValue.isBlank()) {
-            plugin.getLogger().warning("Invalid MATERIAL entry '" + iconValue + "' for group '" + groupName + "'. Falling back to GLOWSTONE_DUST.");
-        }
-        return Material.GLOWSTONE_DUST;
-    }
-
-    private static Material parseMaterial(String iconValue) {
-        if (iconValue == null || iconValue.isBlank()) {
-            return null;
-        }
-        String trimmed = iconValue.trim();
-        if (trimmed.toUpperCase(Locale.ROOT).startsWith("MATERIAL:")) {
-            trimmed = trimmed.substring("MATERIAL:".length()).trim();
-        }
-        if (trimmed.isEmpty()) {
-            return null;
-        }
-        try {
-            return Material.valueOf(trimmed.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException ignored) {
-            return null;
-        }
-    }
-
-    private static ChatColor getChatColorForGroup(String groupName) {
-        return switch (groupName.toUpperCase()) {
-            case "PREDATOR" -> ChatColor.RED;
-            case "MASTER" -> ChatColor.LIGHT_PURPLE;
-            case "DIAMOND" -> ChatColor.AQUA;
-            default -> ChatColor.YELLOW;
-        };
     }
 }

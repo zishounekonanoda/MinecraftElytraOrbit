@@ -5,11 +5,13 @@ api-version: '1.21'
 description: 'Apex-style flight with particle trails for tagged players.'
 commands:
   orbit:
-    description: Manage orbit tags and reload config.
+    description: Open the trail menu, or manage orbit tags and reload config.
     usage: /orbit <tag|untag|reload|menu>
-    permission: apexorbit.admin
+    # No command-level permission: each subcommand checks its own permission
+    # (apexorbit.menu for the GUI, apexorbit.admin for tag/untag/reload).
 permissions:
   apexorbit.admin:
+    description: Allows /orbit tag, untag and reload.
     default: op
   apexorbit.menu:
     description: Allows opening the trail selection GUI.
